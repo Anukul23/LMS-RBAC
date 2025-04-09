@@ -1,7 +1,10 @@
-import { BarChart2, DollarSign, Menu, Settings, ShoppingBag, ShoppingCart, TrendingUp, Users } from "lucide-react";
-import { useState } from "react";
+import { BarChart2, DollarSign, HomeIcon, LogOut, Menu, Settings, ShoppingBag, ShoppingCart, TrendingUp, Users, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { RequirePermission } from "../common/RBAC";
+import { Actions, Subjects } from "../../config/permissions";
 
 const SIDEBAR_ITEMS = [
 	{
@@ -10,7 +13,8 @@ const SIDEBAR_ITEMS = [
 		color: "#6366f1",
 		href: "/",
 	},
-	{ name: "Products", icon: ShoppingBag, color: "#8B5CF6", href: "/products" },
+	//{name : "Home" , icon : HomeIcon , color : "#3B82F6" ,href :"/"},
+	{ name: "Courses", icon: ShoppingBag, color: "#8B5CF6", href: "/products" },
 	{ name: "Users", icon: Users, color: "#EC4899", href: "/users" },
 	{ name: "Sales", icon: DollarSign, color: "#10B981", href: "/sales" },
 	{ name: "Orders", icon: ShoppingCart, color: "#F59E0B", href: "/orders" },
@@ -18,8 +22,31 @@ const SIDEBAR_ITEMS = [
 	{ name: "Settings", icon: Settings, color: "#6EE7B7", href: "/settings" },
 ];
 
+const ADMIN_ITEMS = [
+	{
+		name: "Role Management",
+		icon: Shield,
+		color: "#EF4444",
+		href: "/roles",
+	},
+];
+
 const Sidebar = () => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+	const { logout, user } = useAuth();
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		console.log('Current user in Sidebar:', user);
+	}, [user]);
+
+	const handleLogout = () => {
+		logout();
+		navigate('/login');
+	};
+
+	const isAdmin = user && user.roles && user.roles.includes('ADMIN');
+	console.log('Is admin?', isAdmin, 'User roles:', user?.roles);
 
 	return (
 		<motion.div
@@ -59,7 +86,50 @@ const Sidebar = () => {
 							</motion.div>
 						</Link>
 					))}
+					
+					{/* Admin-only items */}
+					{isAdmin && ADMIN_ITEMS.map((item) => (
+						<Link key={item.href} to={item.href}>
+							<motion.div className='flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2'>
+								<item.icon size={20} style={{ color: item.color, minWidth: "20px" }} />
+								<AnimatePresence>
+									{isSidebarOpen && (
+										<motion.span
+											className='ml-4 whitespace-nowrap'
+											initial={{ opacity: 0, width: 0 }}
+											animate={{ opacity: 1, width: "auto" }}
+											exit={{ opacity: 0, width: 0 }}
+											transition={{ duration: 0.2, delay: 0.3 }}
+										>
+											{item.name}
+										</motion.span>
+									)}
+								</AnimatePresence>
+							</motion.div>
+						</Link>
+					))}
 				</nav>
+
+				{/* Logout Button */}
+				<motion.button
+					onClick={handleLogout}
+					className='flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mt-auto'
+				>
+					<LogOut size={20} style={{ color: "#EF4444", minWidth: "20px" }} />
+					<AnimatePresence>
+						{isSidebarOpen && (
+							<motion.span
+								className='ml-4 whitespace-nowrap'
+								initial={{ opacity: 0, width: 0 }}
+								animate={{ opacity: 1, width: "auto" }}
+								exit={{ opacity: 0, width: 0 }}
+								transition={{ duration: 0.2, delay: 0.3 }}
+							>
+								Logout
+							</motion.span>
+						)}
+					</AnimatePresence>
+				</motion.button>
 			</div>
 		</motion.div>
 	);

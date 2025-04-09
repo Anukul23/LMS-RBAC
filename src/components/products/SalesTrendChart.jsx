@@ -1,43 +1,63 @@
-import { motion } from "framer-motion";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import React from "react";
+import {
+	LineChart,
+	Line,
+	XAxis,
+	YAxis,
+	CartesianGrid,
+	Tooltip,
+	Legend,
+	ResponsiveContainer,
+} from "recharts";
 
-const salesData = [
-	{ month: "Jan", sales: 4000 },
-	{ month: "Feb", sales: 3000 },
-	{ month: "Mar", sales: 5000 },
-	{ month: "Apr", sales: 4500 },
-	{ month: "May", sales: 6000 },
-	{ month: "Jun", sales: 5500 },
+const data = [
+	{ month: "Jan", enrollments: 120, completions: 85 },
+	{ month: "Feb", enrollments: 150, completions: 95 },
+	{ month: "Mar", enrollments: 180, completions: 110 },
+	{ month: "Apr", enrollments: 220, completions: 130 },
+	{ month: "May", enrollments: 250, completions: 150 },
+	{ month: "Jun", enrollments: 280, completions: 170 },
 ];
 
 const SalesTrendChart = () => {
 	return (
-		<motion.div
-			className='bg-gray-800 bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-6 border border-gray-700'
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={{ delay: 0.3 }}
-		>
-			<h2 className='text-xl font-semibold text-gray-100 mb-4'>Sales Trend</h2>
-			<div style={{ width: "100%", height: 300 }}>
-				<ResponsiveContainer>
-					<LineChart data={salesData}>
-						<CartesianGrid strokeDasharray='3 3' stroke='#374151' />
-						<XAxis dataKey='month' stroke='#9CA3AF' />
-						<YAxis stroke='#9CA3AF' />
-						<Tooltip
-							contentStyle={{
-								backgroundColor: "rgba(31, 41, 55, 0.8)",
-								borderColor: "#4B5563",
-							}}
-							itemStyle={{ color: "#E5E7EB" }}
-						/>
+		<div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+			<h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">
+				Course Enrollment Trends
+			</h3>
+			<div className="h-[300px]">
+				<ResponsiveContainer width="100%" height="100%">
+					<LineChart
+						data={data}
+						margin={{
+							top: 5,
+							right: 30,
+							left: 20,
+							bottom: 5,
+						}}
+					>
+						<CartesianGrid strokeDasharray="3 3" />
+						<XAxis dataKey="month" />
+						<YAxis />
+						<Tooltip />
 						<Legend />
-						<Line type='monotone' dataKey='sales' stroke='#8B5CF6' strokeWidth={2} />
+						<Line
+							type="monotone"
+							dataKey="enrollments"
+							stroke="#0088FE"
+							activeDot={{ r: 8 }}
+						/>
+						<Line
+							type="monotone"
+							dataKey="completions"
+							stroke="#00C49F"
+							activeDot={{ r: 8 }}
+						/>
 					</LineChart>
 				</ResponsiveContainer>
 			</div>
-		</motion.div>
+		</div>
 	);
 };
+
 export default SalesTrendChart;
