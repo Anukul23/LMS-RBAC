@@ -20,6 +20,8 @@ const SIDEBAR_ITEMS = [
 	{ name: "Orders", icon: ShoppingCart, color: "#F59E0B", href: "/orders" },
 	{ name: "Analytics", icon: TrendingUp, color: "#3B82F6", href: "/analytics" },
 	{ name: "Settings", icon: Settings, color: "#6EE7B7", href: "/settings" },
+	
+		
 ];
 
 const ADMIN_ITEMS = [
@@ -33,12 +35,16 @@ const ADMIN_ITEMS = [
 
 const Sidebar = () => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-	const { logout, user } = useAuth();
+	const { logout, user, hasPermission } = useAuth();
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		console.log('Current user in Sidebar:', user);
-	}, [user]);
+		console.log('Sidebar - Current user:', user);
+		console.log('Sidebar - User roles:', user?.roles);
+		console.log('Sidebar - Can edit role:', hasPermission(Actions.EDIT_ROLE, Subjects.ROLE));
+		console.log('Sidebar - Can assign role:', hasPermission(Actions.ASSIGN_ROLE, Subjects.USER));
+		console.log('Sidebar - Can view role:', hasPermission(Actions.VIEW_ROLE, Subjects.ROLE));
+	}, [user, hasPermission]);
 
 	const handleLogout = () => {
 		logout();
@@ -66,26 +72,36 @@ const Sidebar = () => {
 				</motion.button>
 
 				<nav className='mt-8 flex-grow'>
-					{SIDEBAR_ITEMS.map((item) => (
-						<Link key={item.href} to={item.href}>
-							<motion.div className='flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2'>
-								<item.icon size={20} style={{ color: item.color, minWidth: "20px" }} />
-								<AnimatePresence>
-									{isSidebarOpen && (
-										<motion.span
-											className='ml-4 whitespace-nowrap'
-											initial={{ opacity: 0, width: 0 }}
-											animate={{ opacity: 1, width: "auto" }}
-											exit={{ opacity: 0, width: 0 }}
-											transition={{ duration: 0.2, delay: 0.3 }}
-										>
-											{item.name}
-										</motion.span>
-									)}
-								</AnimatePresence>
-							</motion.div>
-						</Link>
-					))}
+					{SIDEBAR_ITEMS.map((item) => {
+						// Check if this is the Role Management item
+						if (item.name === "Role Management") {
+							const canAccessRoles = hasPermission(Actions.EDIT_ROLE, Subjects.ROLE) || 
+												 hasPermission(Actions.ASSIGN_ROLE, Subjects.USER);
+							console.log('Can access roles?', canAccessRoles);
+							if (!canAccessRoles) return null;
+						}
+						
+						return (
+							<Link key={item.href} to={item.href}>
+								<motion.div className='flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2'>
+									<item.icon size={20} style={{ color: item.color, minWidth: "20px" }} />
+									<AnimatePresence>
+										{isSidebarOpen && (
+											<motion.span
+												className='ml-4 whitespace-nowrap'
+												initial={{ opacity: 0, width: 0 }}
+												animate={{ opacity: 1, width: "auto" }}
+												exit={{ opacity: 0, width: 0 }}
+												transition={{ duration: 0.2, delay: 0.3 }}
+											>
+												{item.name}
+											</motion.span>
+										)}
+									</AnimatePresence>
+								</motion.div>
+							</Link>
+						);
+					})}
 					
 					{/* Admin-only items */}
 					{isAdmin && ADMIN_ITEMS.map((item) => (

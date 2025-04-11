@@ -38,9 +38,15 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // Here you would typically make an API call to verify credentials
-      // For demo purposes, we'll just log in with the provided data
-      login(formData);
+      // Add role to the login data
+      const loginData = {
+        ...formData,
+        roles: ['ADMIN'], // Set default role to ADMIN for testing
+        id: 1, // Add an ID for the user
+        name: formData.email.split('@')[0] // Use email username as name
+      };
+      console.log('Attempting login with data:', loginData);
+      login(loginData);
       navigate('/');
     }
   };

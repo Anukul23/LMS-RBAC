@@ -34,6 +34,7 @@ export const Actions = {
   EDIT_ROLE: 'edit_role',
   DELETE_ROLE: 'delete_role',
   ASSIGN_ROLE: 'assign_role',
+  VIEW_ROLE: 'view_role',
   
   // Audit actions
   VIEW_AUDIT_LOGS: 'view_audit_logs',
@@ -80,6 +81,7 @@ export const RolePermissions = {
       Actions.ADD_USER,
       Actions.EDIT_USER,
       Actions.DEACTIVATE_USER,
+      Actions.ASSIGN_ROLE,
     ],
     [Subjects.CONTENT]: [
       Actions.VIEW_CONTENT,
@@ -98,6 +100,7 @@ export const RolePermissions = {
       Actions.MANAGE_NOTIFICATIONS,
     ],
     [Subjects.ROLE]: [
+      Actions.VIEW_ROLE,
       Actions.CREATE_ROLE,
       Actions.EDIT_ROLE,
       Actions.DELETE_ROLE,

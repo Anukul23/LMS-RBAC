@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { RolePermissions } from '../config/permissions';
 
 const AuthContext = createContext(null);
 
@@ -15,45 +16,58 @@ export const AuthProvider = ({ children }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
         console.log('Parsed user:', parsedUser);
-        setUser(parsedUser);
+        // Ensure the user has valid roles and permissions
+        const validatedUser = validateAndFixUser(parsedUser);
+        setUser(validatedUser);
+        // Update localStorage with validated user
+        localStorage.setItem('user', JSON.stringify(validatedUser));
       } catch (error) {
         console.error('Error parsing user data from localStorage:', error);
         localStorage.removeItem('user');
-        // Set default admin user if parsing fails
-        const defaultUser = {
-          id: 1,
-          name: 'Admin User',
-          email: 'admin@example.com',
-          roles: ['ADMIN']
-        };
-        console.log('Setting default admin user after parse error:', defaultUser);
-        setUser(defaultUser);
-        localStorage.setItem('user', JSON.stringify(defaultUser));
+        setDefaultAdminUser();
       }
     } else {
-      // No user in localStorage, set default admin user
-      const defaultUser = {
-        id: 1,
-        name: 'Admin User',
-        email: 'admin@example.com',
-        roles: ['ADMIN']
-      };
-      console.log('Setting default admin user (no stored user):', defaultUser);
-      setUser(defaultUser);
-      localStorage.setItem('user', JSON.stringify(defaultUser));
+      setDefaultAdminUser();
     }
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    // Ensure user has at least one role
-    const userWithRoles = {
+  const validateAndFixUser = (userData) => {
+    // Ensure user has valid roles array
+    const roles = Array.isArray(userData.roles) ? userData.roles : ['USER'];
+    
+    // Determine permissions based on roles
+    let permissions = RolePermissions.USER;
+    if (roles.includes('ADMIN')) {
+      permissions = RolePermissions.ADMIN;
+    }
+
+    return {
       ...userData,
-      roles: userData.roles || ['USER'], // Default to USER role if no roles specified
+      roles,
+      permissions
     };
-    console.log('Logging in user:', userWithRoles);
-    setUser(userWithRoles);
-    localStorage.setItem('user', JSON.stringify(userWithRoles));
+  };
+
+  const setDefaultAdminUser = () => {
+    const defaultUser = {
+      id: 1,
+      name: 'Admin User',
+      email: 'admin@example.com',
+      roles: ['ADMIN'],
+      permissions: RolePermissions.ADMIN
+    };
+    console.log('Setting default admin user:', defaultUser);
+    setUser(defaultUser);
+    localStorage.setItem('user', JSON.stringify(defaultUser));
+  };
+
+  const login = (userData) => {
+    // Validate and fix user data before setting
+    const validatedUser = validateAndFixUser(userData);
+    console.log('Logging in user with validated data:', validatedUser);
+    setUser(validatedUser);
+    localStorage.setItem('user', JSON.stringify(validatedUser));
   };
 
   const logout = () => {
@@ -84,6 +98,12 @@ export const AuthProvider = ({ children }) => {
     return hasAll;
   };
 
+  const hasPermission = (action, subject) => {
+    const hasPermission = user?.permissions?.[subject]?.includes(action);
+    console.log(`Checking if user has permission ${action} on ${subject}:`, hasPermission);
+    return hasPermission;
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
@@ -95,7 +115,8 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     hasRole,
     hasAnyRole,
-    hasAllRoles
+    hasAllRoles,
+    hasPermission
   };
 
   console.log('AuthContext current value:', contextValue);

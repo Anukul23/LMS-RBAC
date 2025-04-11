@@ -37,9 +37,9 @@ export const RequireRole = ({ roles, all = false, children, fallback = null }) =
  * @param {React.ReactNode} props.fallback - Optional fallback content to render if the user doesn't have permission
  */
 export const RequirePermission = ({ action, subject, children, fallback = null }) => {
-  const ability = useAbility();
+  const { hasPermission } = useAuth();
   
-  if (!ability || !ability.can(action, subject)) {
+  if (!hasPermission(action, subject)) {
     return fallback;
   }
   

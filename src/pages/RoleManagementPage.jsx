@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { RequirePermission, RequireRole } from '../components/common/RBAC';
 import { Actions, Subjects, RolePermissions, RoleHierarchy } from '../config/permissions';
+import { useAuth } from '../context/AuthContext';
 
 const RoleManagementPage = () => {
+  const { user, hasPermission, hasRole } = useAuth();
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState(null);
   const [permissions, setPermissions] = useState({});
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedUserRoles, setSelectedUserRoles] = useState([]);
+
+  useEffect(() => {
+    // Debug logging for permissions
+    console.log('RoleManagementPage - Current user:', user);
+    console.log('RoleManagementPage - User roles:', user?.roles);
+    console.log('RoleManagementPage - Can edit role:', hasPermission(Actions.EDIT_ROLE, Subjects.ROLE));
+    console.log('RoleManagementPage - Can assign role:', hasPermission(Actions.ASSIGN_ROLE, Subjects.USER));
+    console.log('RoleManagementPage - Is admin:', hasRole('ADMIN'));
+  }, [user, hasPermission, hasRole]);
 
   // Mock data for demonstration
   useEffect(() => {
